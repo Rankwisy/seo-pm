@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO-PM · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --surface: #ffffff;
+    --surface2: #f0ece3;
+    --border: #e0dbd0;
+    --border2: #c8c2b4;
+    --text: #1a1814;
+    --muted: #7a7468;
+    --accent: #1a5c3a;
+    --accent-light: #e8f2ec;
+    --accent2: #1a3a5c;
+    --accent2-light: #e8ecf2;
+    --accent3: #5c3a1a;
+    --accent3-light: #f2ece8;
+    --danger: #c0392b;
+    --warn: #c07a1a;
+    --font: 'Fraunces', serif;
+    --mono: 'DM Mono', monospace;
+    --r: 12px; --rl: 18px;
+    --fs-base: 16px;
+    --fs-sm: 14px;
+    --fs-xs: 13px;
+    --fs-label: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: var(--fs-base); }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(ellipse at 10% 0%, rgba(26,92,58,0.03) 0%, transparent 50%); pointer-events: none; }
+
+  /* NAV */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 2.5rem; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-family: var(--mono); font-size: 13px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .nav-logo::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-user { font-family: var(--mono); font-size: var(--fs-label); color: var(--muted); }
+  .nav-logout { font-family: var(--mono); font-size: var(--fs-label); color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: all 0.2s; }
+  .nav-logout:hover { color: var(--text); border-color: var(--text); }
+
+  /* MAIN */
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+  h1 { font-size: 36px; font-weight: 300; }
+  h1 em { font-weight: 600; font-style: italic; color: var(--accent); }
+  .page-date { font-family: var(--mono); font-size: var(--fs-label); color: var(--muted); }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2.5rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); padding: 1.25rem 1.5rem; }
+  .stat-val { font-size: 34px; font-weight: 600; color: var(--accent); line-height: 1; }
+  .stat-label { font-family: var(--mono); font-size: var(--fs-label); color: var(--muted); margin-top: 6px; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .filter { padding: 8px 18px; border-radius: 30px; border: 1px solid var(--border2); font-size: var(--fs-sm); cursor: pointer; background: transparent; color: var(--muted); font-family: var(--font); transition: all 0.15s; }
+  .filter.active { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
+  .filter:hover:not(.active) { color: var(--text); border-color: var(--border2); }
+  .btn-add { margin-left: auto; padding: 9px 20px; background: var(--accent); color: white; border: none; border-radius: 30px; font-family: var(--font); font-size: var(--fs-sm); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-add:hover { background: #144d30; box-shadow: 0 4px 14px rgba(26,92,58,0.2); }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); padding: 1.5rem; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s; cursor: pointer; text-decoration: none; color: inherit; }
+  .card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(26,92,58,0.08); transform: translateY(-2px); }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .card-name { font-size: 20px; font-weight: 600; }
+  .badge { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+  .badge-seo { background: var(--accent-light); color: var(--accent); }
+  .badge-own { background: var(--accent2-light); color: var(--accent2); }
+  .badge-startup { background: var(--accent3-light); color: var(--accent3); }
+  .card-cat { font-size: var(--fs-sm); color: var(--muted); line-height: 1.5; }
+  .card-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+  .meta { font-family: var(--mono); font-size: var(--fs-label); color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+
+  .divider { height: 1px; background: var(--border); }
+
+  .sites-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .sec-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .site-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+  .site-url { font-family: var(--mono); font-size: var(--fs-label); color: var(--accent); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; transition: opacity 0.15s; }
+  .site-url:hover { opacity: 0.7; }
+  .site-status { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; margin-left: 8px; }
+  .status-up { background: var(--accent-light); color: var(--accent); }
+  .status-down { background: #fde8e8; color: var(--danger); }
+  .status-unknown { background: var(--surface2); color: var(--muted); }
+  .more-sites { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .kw-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kw { font-family: var(--mono); font-size: 11px; padding: 4px 9px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); }
+
+  .card-footer { display: flex; gap: 8px; padding-top: 4px; }
+  .btn-view { flex: 1; padding: 9px; background: var(--accent-light); border: none; border-radius: var(--r); color: var(--accent); font-family: var(--font); font-size: var(--fs-sm); font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-view:hover { background: var(--accent); color: white; }
+  .btn-edit { padding: 9px 14px; background: transparent; border: 1px solid var(--border2); border-radius: var(--r); color: var(--muted); font-family: var(--font); font-size: var(--fs-sm); cursor: pointer; transition: all 0.15s; }
+  .btn-edit:hover { border-color: var(--text); color: var(--text); }
+  .btn-del { padding: 9px 14px; background: transparent; border: 1px solid var(--border); border-radius: var(--r); color: var(--muted); font-family: var(--font); font-size: var(--fs-sm); cursor: pointer; transition: all 0.15s; }
+  .btn-del:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.5); z-index: 200; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+  .modal h2 { font-size: 24px; font-weight: 600; margin-bottom: 1.75rem; }
+  .fg { margin-bottom: 1.25rem; }
+  .fg label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .fg input, .fg select, .fg textarea { width: 100%; padding: 11px 14px; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--r); font-family: var(--font); font-size: var(--fs-sm); color: var(--text); outline: none; transition: border 0.2s; }
+  .fg textarea { font-family: var(--mono); font-size: var(--fs-label); resize: vertical; min-height: 90px; line-height: 1.7; }
+  .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); background: white; }
+  .fg select option { background: white; }
+  .fg-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 2rem; }
+  .btn-save { flex: 1; padding: 13px; background: var(--accent); color: white; border: none; border-radius: var(--r); font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-save:hover { background: #144d30; }
+  .btn-cancel { padding: 13px 20px; background: transparent; border: 1px solid var(--border2); border-radius: var(--r); color: var(--muted); font-family: var(--font); font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .btn-cancel:hover { color: var(--text); border-color: var(--text); }
+
+  .loading { text-align: center; padding: 4rem; font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted); }
+  .empty { text-align: center; padding: 4rem; color: var(--muted); font-size: var(--fs-sm); }
+
+  @media (max-width: 768px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    main { padding: 1.5rem 1rem; }
+    nav { padding: 1rem; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">SEO-PM</div>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user">Alicante, ES</span>
+    <button class="nav-logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-head">
+    <h1>Project <em>Dashboard</em></h1>
+    <div class="page-date" id="page-date"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s1">—</div><div class="stat-label">SEO clients</div></div>
+    <div class="stat"><div class="stat-val" id="s2">—</div><div class="stat-label">Websites managed</div></div>
+    <div class="stat"><div class="stat-val" id="s3">—</div><div class="stat-label">Keywords tracked</div></div>
+    <div class="stat"><div class="stat-val" id="s4">—</div><div class="stat-label">Own projects</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="filter active" onclick="setFilter('all',this)">All</button>
+    <button class="filter" onclick="setFilter('seo',this)">SEO Clients</button>
+    <button class="filter" onclick="setFilter('own',this)">Own Projects</button>
+    <button class="filter" onclick="setFilter('startup',this)">Startup</button>
+    <button class="btn-add" onclick="openAdd()">+ Add project</button>
+  </div>
+
+  <div class="grid" id="grid"><div class="loading">Loading projects…</div></div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Add project</h2>
+    <div class="fg">
+      <label>Project name *</label>
+      <input id="f-name" placeholder="e.g. LIMOSTAR">
+    </div>
+    <div class="fg">
+      <label>Type</label>
+      <select id="f-type">
+        <option value="seo">SEO Client</option>
+        <option value="own">Own Project</option>
+        <option value="startup">Startup</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Category / Description</label>
+      <input id="f-cat" placeholder="e.g. Transport privé Bruxelles">
+    </div>
+    <div class="fg">
+      <label>Client name</label>
+      <input id="f-client" placeholder="e.g. Michael">
+    </div>
+    <div class="fg">
+      <label>Location</label>
+      <input id="f-loc" placeholder="e.g. Brussels, Belgium">
+    </div>
+    <div class="fg">
+      <label>Languages</label>
+      <input id="f-lang" placeholder="e.g. FR / NL / EN">
+    </div>
+    <div class="fg">
+      <label>Websites</label>
+      <textarea id="f-sites" placeholder="https://example.com&#10;https://example2.com"></textarea>
+      <div class="fg-hint">One URL per line</div>
+    </div>
+    <div class="fg">
+      <label>Keywords</label>
+      <textarea id="f-kw" placeholder="keyword 1&#10;keyword 2"></textarea>
+      <div class="fg-hint">One keyword per line</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProject()">Save project</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+if (sessionStorage.getItem('seopm_auth') !== 'true') location.href = 'index.html';
+
+const { createClient } = supabase;
+const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+let allProjects = [];
+let allWebsites = [];
+let allKeywords = [];
+let currentFilter = 'all';
+let editingId = null;
+
+document.getElementById('page-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+async function loadData() {
+  const [{ data: projects }, { data: websites }, { data: keywords }] = await Promise.all([
+    db.from('projects').select('*').order('created_at'),
+    db.from('websites').select('*'),
+    db.from('keywords').select('*')
+  ]);
+  allProjects = projects || [];
+  allWebsites = websites || [];
+  allKeywords = keywords || [];
+  updateStats();
+  renderGrid();
+}
+
+function updateStats() {
+  document.getElementById('s1').textContent = allProjects.filter(p=>p.type==='seo').length;
+  document.getElementById('s2').textContent = allWebsites.length;
+  document.getElementById('s3').textContent = allKeywords.length + '+';
+  document.getElementById('s4').textContent = allProjects.filter(p=>p.type!=='seo').length;
+}
+
+function badgeClass(t) { return 'badge badge-'+t; }
+function badgeLabel(t) { return t==='seo'?'SEO Client':t==='own'?'Own Project':'Startup'; }
+
+function renderGrid() {
+  const filtered = currentFilter==='all' ? allProjects : allProjects.filter(p=>p.type===currentFilter);
+  const grid = document.getElementById('grid');
+  if (!filtered.length) { grid.innerHTML='<div class="empty">No projects found.</div>'; return; }
+
+  grid.innerHTML = filtered.map(p => {
+    const sites = allWebsites.filter(w=>w.project_id===p.id);
+    const kws = allKeywords.filter(k=>k.project_id===p.id);
+    const mainSite = sites.find(s=>s.is_main) || sites[0];
+    const extraSites = sites.slice(0, 3);
+    const moreCount = sites.length - 3;
+
+    const sitesHtml = extraSites.map(s => {
+      const label = s.url.replace(/https?:\/\//,'').replace(/\/$/,'');
+      return `<div class="site-row">
+        <a class="site-url" href="${s.url}" target="_blank" onclick="event.stopPropagation()">${label}</a>
+        <span class="site-status status-unknown">—</span>
+      </div>`;
+    }).join('');
+
+    const kwHtml = kws.slice(0,4).map(k=>`<span class="kw">${k.keyword}</span>`).join('');
+    const kwMore = kws.length > 4 ? `<span class="kw">+${kws.length-4} more</span>` : '';
+
+    return `<div class="card" onclick="goProject('${p.id}')">
+      <div class="card-head">
+        <div class="card-name">${p.name}</div>
+        <span class="${badgeClass(p.type)}">${badgeLabel(p.type)}</span>
+      </div>
+      <div class="card-cat">${p.category||''}</div>
+      <div class="card-meta">
+        ${p.location?`<span class="meta"><span class="meta-dot"></span>${p.location}</span>`:''}
+        ${p.lang?`<span class="meta"><span class="meta-dot"></span>${p.lang}</span>`:''}
+        ${p.client_name?`<span class="meta"><span class="meta-dot"></span>${p.client_name}</span>`:''}
+      </div>
+      ${sites.length>0?`<div class="divider"></div>
+      <div class="sites-wrap">
+        <div class="sec-label">Websites (${sites.length})</div>
+        ${sitesHtml}
+        ${moreCount>0?`<div class="more-sites">+${moreCount} more sites</div>`:''}
+      </div>`:''}
+      ${kws.length>0?`<div class="divider"></div>
+      <div>
+        <div class="sec-label">Keywords (${kws.length})</div>
+        <div class="kw-wrap">${kwHtml}${kwMore}</div>
+      </div>`:''}
+      <div class="divider"></div>
+      <div class="card-footer" onclick="event.stopPropagation()">
+        <button class="btn-view" onclick="goProject('${p.id}')">View project →</button>
+        <button class="btn-edit" onclick="openEdit('${p.id}')">Edit</button>
+        <button class="btn-del" onclick="deleteProject('${p.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function goProject(id) { location.href = `project.html?id=${id}`; }
+
+function setFilter(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function openAdd() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add project';
+  ['f-name','f-cat','f-client','f-loc','f-lang','f-sites','f-kw'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type').value = 'seo';
+  document.getElementById('modal').classList.add('open');
+}
+
+async function openEdit(id) {
+  event.stopPropagation();
+  editingId = id;
+  const p = allProjects.find(x=>x.id===id);
+  if (!p) return;
+  const sites = allWebsites.filter(w=>w.project_id===id).map(w=>w.url).join('\n');
+  const kws = allKeywords.filter(k=>k.project_id===id).map(k=>k.keyword).join('\n');
+  document.getElementById('modal-title').textContent = 'Edit — ' + p.name;
+  document.getElementById('f-name').value = p.name || '';
+  document.getElementById('f-type').value = p.type || 'seo';
+  document.getElementById('f-cat').value = p.category || '';
+  document.getElementById('f-client').value = p.client_name || '';
+  document.getElementById('f-loc').value = p.location || '';
+  document.getElementById('f-lang').value = p.lang || '';
+  document.getElementById('f-sites').value = sites;
+  document.getElementById('f-kw').value = kws;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); editingId = null; }
+
+async function saveProject() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Project name is required.'); return; }
+  const data = {
+    name, type: document.getElementById('f-type').value,
+    category: document.getElementById('f-cat').value.trim(),
+    client_name: document.getElementById('f-client').value.trim(),
+    location: document.getElementById('f-loc').value.trim(),
+    lang: document.getElementById('f-lang').value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  const sites = document.getElementById('f-sites').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const kws = document.getElementById('f-kw').value.split('\n').map(s=>s.trim()).filter(Boolean);
+
+  let projectId = editingId;
+  if (editingId) {
+    await db.from('projects').update(data).eq('id', editingId);
+    await db.from('websites').delete().eq('project_id', editingId);
+    await db.from('keywords').delete().eq('project_id', editingId);
+  } else {
+    const { data: newP } = await db.from('projects').insert(data).select().single();
+    projectId = newP.id;
+  }
+  if (sites.length) {
+    await db.from('websites').insert(sites.map((url, i) => ({ project_id: projectId, url, is_main: i===0 })));
+  }
+  if (kws.length) {
+    await db.from('keywords').insert(kws.map(keyword => ({ project_id: projectId, keyword })));
+  }
+  closeModal();
+  await loadData();
+}
+
+async function deleteProject(id) {
+  event.stopPropagation();
+  if (!confirm('Delete this project and all its data?')) return;
+  await db.from('projects').delete().eq('id', id);
+  await loadData();
+}
+
+function logout() { sessionStorage.removeItem('seopm_auth'); location.href='index.html'; }
+
+document.getElementById('modal').addEventListener('click', function(e){if(e.target===this)closeModal();});
+
+loadData();
+</script>
+</body>
+</html>

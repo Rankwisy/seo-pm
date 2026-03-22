@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO-PM · Login</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --surface: #ffffff;
+    --border: #e0dbd0;
+    --border2: #c8c2b4;
+    --text: #1a1814;
+    --muted: #7a7468;
+    --accent: #1a5c3a;
+    --accent-light: #e8f2ec;
+    --danger: #c0392b;
+    --font: 'Fraunces', serif;
+    --mono: 'DM Mono', monospace;
+    --r: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(circle at 20% 50%, rgba(26,92,58,0.04) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(26,92,58,0.03) 0%, transparent 50%); pointer-events: none; }
+  .box { width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 3rem 2.5rem; position: relative; box-shadow: 0 2px 40px rgba(0,0,0,0.06); }
+  .logo { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 8px; }
+  .logo::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  h1 { font-size: 32px; font-weight: 300; line-height: 1.2; margin-bottom: 0.5rem; }
+  h1 span { font-weight: 600; font-style: italic; color: var(--accent); }
+  .sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 2.5rem; }
+  label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  input[type=password] { width: 100%; padding: 13px 16px; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--r); font-family: var(--mono); font-size: 15px; color: var(--text); outline: none; transition: border 0.2s; margin-bottom: 1rem; letter-spacing: 0.1em; }
+  input[type=password]:focus { border-color: var(--accent); background: white; }
+  button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: var(--r); font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.01em; }
+  button:hover { background: #144d30; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,92,58,0.25); }
+  button:active { transform: translateY(0); }
+  .err { font-family: var(--mono); font-size: 12px; color: var(--danger); margin-top: 0.75rem; display: none; text-align: center; }
+  .footer { margin-top: 2rem; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">SEO-PM v1.0</div>
+  <h1>Welcome<br><span>back.</span></h1>
+  <div class="sub">Abdelkrim Aridhi · Project Dashboard</div>
+  <label for="pwd">Password</label>
+  <input type="password" id="pwd" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()">Sign in →</button>
+  <div class="err" id="err">Incorrect password. Try again.</div>
+  <div class="footer">rankwise.eu · mypages.agency</div>
+</div>
+<script src="config.js"></script>
+<script>
+  if (sessionStorage.getItem('seopm_auth') === 'true') location.href = 'dashboard.html';
+  function login() {
+    const val = document.getElementById('pwd').value;
+    if (val === CONFIG.APP_PASSWORD) {
+      sessionStorage.setItem('seopm_auth', 'true');
+      location.href = 'dashboard.html';
+    } else {
+      document.getElementById('err').style.display = 'block';
+      document.getElementById('pwd').style.borderColor = '#c0392b';
+    }
+  }
+</script>
+</body>
+</html>
