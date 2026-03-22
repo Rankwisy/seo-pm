@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Project Manager — Abdelkrim</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0efe8;
+    --muted: #888783;
+    --accent: #c8f060;
+    --accent2: #60c8f0;
+    --accent3: #f0a060;
+    --danger: #f06060;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --font: 'Syne', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-box { width: 360px; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; }
+  .login-logo { font-size: 13px; font-family: var(--mono); color: var(--accent); letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+  .login-title { font-size: 22px; font-weight: 700; margin-bottom: 0.4rem; }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
+  .login-input { width: 100%; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--mono); font-size: 14px; margin-bottom: 1rem; outline: none; transition: border 0.2s; }
+  .login-input:focus { border-color: var(--accent); }
+  .login-btn { width: 100%; padding: 12px; background: var(--accent); color: #0e0e0f; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+  .login-btn:hover { opacity: 0.88; }
+  .login-error { font-size: 12px; color: var(--danger); margin-top: 0.75rem; display: none; }
+
+  #app { display: none; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .topbar-logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
+  .topbar-user { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 12px; }
+  .logout-btn { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+  .logout-btn:hover { color: var(--text); }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  .page-header { margin-bottom: 2rem; }
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 0.3rem; }
+  .page-sub { font-size: 14px; color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 2rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; }
+  .stat-val { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .filter-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border2); font-size: 13px; cursor: pointer; background: transparent; color: var(--muted); font-family: var(--font); transition: all 0.15s; }
+  .filter-btn.active { background: var(--accent); color: #0e0e0f; border-color: var(--accent); font-weight: 600; }
+  .filter-btn:hover:not(.active) { color: var(--text); }
+  .add-btn { margin-left: auto; padding: 8px 18px; background: var(--accent); color: #0e0e0f; border: none; border-radius: 20px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+  .add-btn:hover { opacity: 0.88; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .card-name { font-size: 16px; font-weight: 700; }
+  .badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .badge-seo { background: rgba(96,200,240,0.12); color: var(--accent2); }
+  .badge-own { background: rgba(200,240,96,0.12); color: var(--accent); }
+  .badge-startup { background: rgba(240,160,96,0.12); color: var(--accent3); }
+  .card-cat { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .card-meta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .meta-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .sites-section, .kw-section { border-top: 1px solid var(--border); padding-top: 10px; }
+  .section-label { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 7px; }
+  .site-link { display: block; font-family: var(--mono); font-size: 11px; color: var(--accent2); text-decoration: none; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity 0.15s; }
+  .site-link:hover { opacity: 0.75; }
+  .more-pill { display: inline-block; font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; margin-top: 2px; }
+  .kw-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .kw-tag { font-size: 11px; font-family: var(--mono); padding: 3px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); }
+  .card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); }
+  .edit-btn { flex: 1; padding: 8px; background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--muted); font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .edit-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .del-btn { padding: 8px 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .del-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 1.5rem; }
+  .form-group { margin-bottom: 1.1rem; }
+  .form-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: 0.05em; text-transform: uppercase; }
+  .form-input, .form-select, .form-textarea { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 13px; outline: none; transition: border 0.2s; }
+  .form-textarea { resize: vertical; min-height: 80px; font-family: var(--mono); font-size: 12px; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .save-btn { flex: 1; padding: 11px; background: var(--accent); color: #0e0e0f; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .save-btn:hover { opacity: 0.88; }
+  .cancel-btn { padding: 11px 20px; background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--muted); font-family: var(--font); font-size: 14px; cursor: pointer; }
+  .cancel-btn:hover { color: var(--text); }
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 1rem; }
+    .topbar { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">// SEO-PM</div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Abdelkrim Aridhi · SEO Project Manager</div>
+    <input type="password" class="login-input" id="pwd-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">// SEO-PM · Abdelkrim Aridhi</div>
+    <div class="topbar-user">
+      <span>Alicante, ES</span>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Project Dashboard</div>
+      <div class="page-sub" id="last-updated"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="s-clients">0</div><div class="stat-label">SEO clients</div></div>
+      <div class="stat"><div class="stat-val" id="s-sites">0</div><div class="stat-label">Websites managed</div></div>
+      <div class="stat"><div class="stat-val" id="s-kw">0</div><div class="stat-label">Keywords tracked</div></div>
+      <div class="stat"><div class="stat-val" id="s-own">0</div><div class="stat-label">Own projects</div></div>
+    </div>
+    <div class="toolbar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('seo',this)">SEO Clients</button>
+      <button class="filter-btn" onclick="setFilter('own',this)">Own Projects</button>
+      <button class="filter-btn" onclick="setFilter('startup',this)">Startup</button>
+      <button class="add-btn" onclick="openAdd()">+ Add project</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add project</div>
+    <div class="form-group">
+      <label class="form-label">Project name</label>
+      <input class="form-input" id="f-name" placeholder="e.g. LIMOSTAR">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="f-type">
+        <option value="seo">SEO Client</option>
+        <option value="own">Own Project</option>
+        <option value="startup">Startup</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category / Description</label>
+      <input class="form-input" id="f-cat" placeholder="e.g. Transport privé Bruxelles">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Location</label>
+      <input class="form-input" id="f-loc" placeholder="e.g. Brussels, Belgium">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Languages</label>
+      <input class="form-input" id="f-lang" placeholder="e.g. FR / NL / EN">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Websites (one per line)</label>
+      <textarea class="form-textarea" id="f-sites" placeholder="https://example.com&#10;https://example2.com"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Keywords (one per line)</label>
+      <textarea class="form-textarea" id="f-kw" placeholder="keyword 1&#10;keyword 2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="save-btn" onclick="saveProject()">Save project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'rankwise2025';
+let projects = [
+  { id:1, name:'LIMOSTAR', type:'seo', category:'Transport privé / location autocar Bruxelles', location:'Brussels, Belgium', lang:'FR', websites:['https://limostar.be','https://location-bus.be','https://locationautocar.be','https://lvc.brussels','https://transportbelgique.com','https://rentabus.be','https://busminibus.com','https://autocar-bruxelles.be','https://busrental.brussels','https://shuttle-service.be','https://rentbus.brussels','https://vtc.brussels','https://bus4rent.be','https://chauffeur.brussels','https://autocar-service.com','https://autocar.brussels','https://locationbus.be'], keywords:['location autocar avec chauffeur Bruxelles','autocar privé Bruxelles','location minibus avec chauffeur Bruxelles','bus privé avec chauffeur Bruxelles','transfert aéroport autocar Bruxelles','autocar pour événement Bruxelles','location bus mariage Bruxelles','bus rental Brussels','charter bus Brussels','coach hire Brussels','airport transfer bus Brussels','corporate bus hire Brussels','shuttle service Brussels','wedding bus Brussels'] },
+  { id:2, name:'CAPTIVE', type:'seo', category:'Paintball Bruxelles (+ other categories to be added)', location:'Brussels, Belgium', lang:'FR', websites:['https://paintballbruxelles.brussels'], keywords:['paintball Bruxelles','paintball Brussels','laser game Bruxelles'] },
+  { id:3, name:'ASTRID GOLD', type:'seo', category:'Jewellery — diamonds, moissanite, gold, silver', location:'Antwerp, Belgium', lang:'FR / NL / EN', websites:['https://www.astridgold.be'], keywords:['diamonds Antwerp','loose diamonds','moissanite jewellery','gold jewellery Antwerp','handcraft jewellery'] },
+  { id:4, name:'iSearchTrends', type:'own', category:'E-commerce trending products data platform', location:'Online', lang:'EN', websites:['https://isearchtrends.com'], keywords:['trending products','ecommerce trends','product research tool'] },
+  { id:5, name:'STARTUP IDEAS', type:'startup', category:'New startup concepts — in development', location:'Remote', lang:'EN / FR / AR', websites:['https://aridhi-abdelkrim-rankwise.medium.com'], keywords:[] }
+];
+let currentFilter = 'all';
+let editingId = null;
+
+function doLogin() {
+  if (document.getElementById('pwd-input').value === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    render();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+function badgeClass(t) { return t==='seo'?'badge-seo':t==='own'?'badge-own':'badge-startup'; }
+function badgeLabel(t) { return t==='seo'?'SEO Client':t==='own'?'Own Project':'Startup'; }
+
+function render() {
+  const filtered = currentFilter==='all' ? projects : projects.filter(p=>p.type===currentFilter);
+  const grid = document.getElementById('grid');
+  if (!filtered.length) { grid.innerHTML='<div class="empty">No projects found. Add one!</div>'; }
+  else {
+    grid.innerHTML = filtered.map(p => {
+      const sitesHtml = p.websites.slice(0,3).map(s=>`<a class="site-link" href="${s}" target="_blank">${s.replace(/https?:\/\//,'').replace(/\/$/,'')}</a>`).join('');
+      const moreCount = p.websites.length - 3;
+      const moreSites = moreCount > 0 ? `<span class="more-pill">+${moreCount} more sites</span>` : '';
+      const kwHtml = p.keywords.slice(0,5).map(k=>`<span class="kw-tag">${k}</span>`).join('');
+      const kwMore = p.keywords.length>5 ? `<span class="kw-tag">+${p.keywords.length-5} more</span>` : '';
+      return `<div class="card">
+        <div class="card-top"><div class="card-name">${p.name}</div><span class="badge ${badgeClass(p.type)}">${badgeLabel(p.type)}</span></div>
+        <div class="card-cat">${p.category}</div>
+        <div class="card-meta"><span class="meta-item"><span class="meta-dot"></span>${p.location}</span><span class="meta-item"><span class="meta-dot"></span>${p.lang}</span></div>
+        <div class="sites-section"><div class="section-label">Websites (${p.websites.length})</div>${sitesHtml}${moreSites}</div>
+        ${p.keywords.length>0?`<div class="kw-section"><div class="section-label">Keywords (${p.keywords.length})</div><div class="kw-tags">${kwHtml}${kwMore}</div></div>`:''}
+        <div class="card-actions"><button class="edit-btn" onclick="openEdit(${p.id})">Edit project</button><button class="del-btn" onclick="deleteProject(${p.id})">Delete</button></div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('s-clients').textContent = projects.filter(p=>p.type==='seo').length;
+  document.getElementById('s-sites').textContent = projects.reduce((a,p)=>a+p.websites.length,0);
+  document.getElementById('s-kw').textContent = projects.reduce((a,p)=>a+p.keywords.length,0)+'+';
+  document.getElementById('s-own').textContent = projects.filter(p=>p.type!=='seo').length;
+  document.getElementById('last-updated').textContent = 'Last updated: '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+function setFilter(type,el) {
+  currentFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+function openAdd() {
+  editingId=null;
+  document.getElementById('modal-title').textContent='Add project';
+  ['f-name','f-cat','f-loc','f-lang','f-sites','f-kw'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type').value='seo';
+  document.getElementById('modal').classList.add('open');
+}
+function openEdit(id) {
+  const p=projects.find(x=>x.id===id); if(!p) return;
+  editingId=id;
+  document.getElementById('modal-title').textContent='Edit — '+p.name;
+  document.getElementById('f-name').value=p.name;
+  document.getElementById('f-type').value=p.type;
+  document.getElementById('f-cat').value=p.category;
+  document.getElementById('f-loc').value=p.location;
+  document.getElementById('f-lang').value=p.lang;
+  document.getElementById('f-sites').value=p.websites.join('\n');
+  document.getElementById('f-kw').value=p.keywords.join('\n');
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); editingId=null; }
+function saveProject() {
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('Please enter a project name.');return;}
+  const data={ name, type:document.getElementById('f-type').value, category:document.getElementById('f-cat').value.trim(), location:document.getElementById('f-loc').value.trim(), lang:document.getElementById('f-lang').value.trim(), websites:document.getElementById('f-sites').value.split('\n').map(s=>s.trim()).filter(Boolean), keywords:document.getElementById('f-kw').value.split('\n').map(s=>s.trim()).filter(Boolean) };
+  if(editingId){ const idx=projects.findIndex(p=>p.id===editingId); projects[idx]={...projects[idx],...data}; }
+  else { data.id=Date.now(); projects.push(data); }
+  closeModal(); render();
+}
+function deleteProject(id) { if(!confirm('Delete this project?')) return; projects=projects.filter(p=>p.id!==id); render(); }
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>

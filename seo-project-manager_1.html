@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Project Manager — Abdelkrim</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --accent: #c8f060;
+  --accent2: #a8d840;
+  --blue: #60a8f0;
+  --orange: #f0a860;
+  --pink: #f060a8;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* LOGIN */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+.login-box {
+  width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+}
+.login-logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+.login-title { font-size: 22px; font-weight: 500; margin-bottom: 0.4rem; }
+.login-sub { font-size: 14px; color: var(--text2); margin-bottom: 2rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.form-group input {
+  width: 100%; padding: 10px 14px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius); color: var(--text); font-size: 14px;
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border 0.2s;
+}
+.form-group input:focus { border-color: var(--accent); }
+.btn-login {
+  width: 100%; padding: 11px;
+  background: var(--accent); color: #111;
+  border: none; border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 0.5rem; transition: background 0.2s;
+}
+.btn-login:hover { background: var(--accent2); }
+.login-error { font-size: 13px; color: #f06060; margin-top: 0.75rem; display: none; }
+
+/* APP */
+#app { display: none; min-height: 100vh; }
+
+/* SIDEBAR */
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+}
+.sidebar-logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--accent);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 2rem; padding: 0 0.5rem;
+}
+.nav-label { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; padding: 0 0.5rem; margin-bottom: 0.5rem; margin-top: 1.5rem; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius);
+  font-size: 13px; color: var(--text2); cursor: pointer;
+  transition: all 0.15s; margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: rgba(200,240,96,0.1); color: var(--accent); }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sidebar-bottom { margin-top: auto; }
+.logout-btn {
+  width: 100%; padding: 8px 10px;
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: var(--radius); color: var(--text2);
+  font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.logout-btn:hover { border-color: #f06060; color: #f06060; }
+
+/* MAIN */
+.main { margin-left: 220px; padding: 2rem 2.5rem; flex: 1; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.page-title { font-size: 22px; font-weight: 500; }
+.page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+.stat-val { font-size: 28px; font-weight: 600; color: var(--accent); font-family: 'DM Mono', monospace; }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+/* FILTERS */
+.filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.filter-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); font-size: 12px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+}
+.filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 600; }
+.filter-btn:hover:not(.active) { border-color: var(--border2); background: var(--surface2); color: var(--text); }
+.add-btn {
+  margin-left: auto; padding: 8px 16px;
+  background: var(--accent); color: #111;
+  border: none; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+}
+.add-btn:hover { background: var(--accent2); }
+
+/* PROJECT CARDS */
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.proj-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+.proj-card:hover { border-color: var(--border2); }
+.proj-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.proj-name { font-size: 15px; font-weight: 600; }
+.type-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.type-seo { background: rgba(96,168,240,0.15); color: var(--blue); }
+.type-own { background: rgba(200,240,96,0.15); color: var(--accent); }
+.type-startup { background: rgba(240,168,96,0.15); color: var(--orange); }
+.proj-cat { font-size: 12px; color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
+.proj-meta { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.sites-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.section-label { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.site-pill {
+  display: inline-block; font-size: 11px; padding: 2px 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--text2); margin: 2px;
+}
+.kw-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.kw-tag {
+  display: inline-block; font-size: 10px; padding: 2px 7px;
+  background: rgba(200,240,96,0.08); border: 1px solid rgba(200,240,96,0.2);
+  border-radius: 20px; color: var(--accent); margin: 2px;
+  font-family: 'DM Mono', monospace;
+}
+.card-actions { display: flex; gap: 8px; margin-top: 14px; }
+.card-btn {
+  flex: 1; padding: 7px; border-radius: var(--radius);
+  font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.card-btn-edit { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.card-btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+.card-btn-del { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+.card-btn-del:hover { border-color: #f06060; color: #f06060; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 2rem;
+  width: 560px; max-height: 90vh; overflow-y: auto;
+  max-width: calc(100vw - 2rem);
+}
+.modal-title { font-size: 17px; font-weight: 600; margin-bottom: 1.5rem; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-field { margin-bottom: 1rem; }
+.modal-field.full { grid-column: 1 / -1; }
+.modal-field label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.modal-field input, .modal-field select, .modal-field textarea {
+  width: 100%; padding: 9px 12px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius); color: var(--text); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border 0.2s;
+}
+.modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--accent); }
+.modal-field textarea { resize: vertical; min-height: 70px; }
+.modal-field select option { background: var(--surface2); }
+.modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; justify-content: flex-end; }
+.btn-cancel {
+  padding: 9px 20px; background: transparent;
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  color: var(--text2); font-size: 13px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-cancel:hover { border-color: var(--border2); background: var(--surface2); }
+.btn-save {
+  padding: 9px 20px; background: var(--accent);
+  border: none; border-radius: var(--radius);
+  color: #111; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-save:hover { background: var(--accent2); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 4rem 2rem; color: var(--text2); }
+.empty-icon { font-size: 40px; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">SEO · PM</div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to your project manager</div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="abdelkrim" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="login-error">Invalid username or password.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">SEO · PM</div>
+      <div class="nav-label">Projects</div>
+      <div class="nav-item active" onclick="setFilter('all', this)">
+        <span class="nav-dot" style="background:#888"></span> All Projects
+      </div>
+      <div class="nav-item" onclick="setFilter('seo', this)">
+        <span class="nav-dot" style="background:var(--blue)"></span> SEO Clients
+      </div>
+      <div class="nav-item" onclick="setFilter('own', this)">
+        <span class="nav-dot" style="background:var(--accent)"></span> Own Projects
+      </div>
+      <div class="nav-item" onclick="setFilter('startup', this)">
+        <span class="nav-dot" style="background:var(--orange)"></span> Startup Ideas
+      </div>
+      <div class="sidebar-bottom">
+        <div style="font-size:11px;color:var(--text3);padding:0 0.5rem;margin-bottom:10px;">Signed in as Abdelkrim</div>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="page-title">All Projects</div>
+          <div class="page-sub" id="page-sub">Overview of all SEO and personal projects</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total projects</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-sites">0</div><div class="stat-label">Websites managed</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-kw">0</div><div class="stat-label">Keywords tracked</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-clients">0</div><div class="stat-label">SEO clients</div></div>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setFilter('seo', this)">SEO Clients</button>
+        <button class="filter-btn" onclick="setFilter('own', this)">Own Projects</button>
+        <button class="filter-btn" onclick="setFilter('startup', this)">Startup</button>
+        <button class="add-btn" onclick="openModal()">+ Add Project</button>
+      </div>
+
+      <div class="projects-grid" id="grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">New Project</div>
+    <div class="modal-grid">
+      <div class="modal-field">
+        <label>Project Name</label>
+        <input type="text" id="f-name" placeholder="e.g. LIMOSTAR" />
+      </div>
+      <div class="modal-field">
+        <label>Type</label>
+        <select id="f-type">
+          <option value="seo">SEO Client</option>
+          <option value="own">Own Project</option>
+          <option value="startup">Startup Idea</option>
+        </select>
+      </div>
+      <div class="modal-field full">
+        <label>Category / Description</label>
+        <input type="text" id="f-cat" placeholder="e.g. Transport privé / location autocar Bruxelles" />
+      </div>
+      <div class="modal-field">
+        <label>Location</label>
+        <input type="text" id="f-loc" placeholder="e.g. Brussels, Belgium" />
+      </div>
+      <div class="modal-field">
+        <label>Language(s)</label>
+        <input type="text" id="f-lang" placeholder="e.g. FR / NL / EN" />
+      </div>
+      <div class="modal-field full">
+        <label>Websites (one per line)</label>
+        <textarea id="f-sites" placeholder="https://example.com&#10;https://example2.com"></textarea>
+      </div>
+      <div class="modal-field full">
+        <label>Keywords (one per line)</label>
+        <textarea id="f-kw" placeholder="location autocar Bruxelles&#10;bus rental Brussels"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CREDENTIALS = { user: 'abdelkrim', pass: 'rankwise2025' };
+
+let projects = JSON.parse(localStorage.getItem('seo_projects') || 'null') || [
+  { id: 1, name: 'LIMOSTAR', type: 'seo', category: 'Transport privé / location autocar Bruxelles', location: 'Brussels, Belgium', lang: 'FR', websites: ['https://limostar.be','https://location-bus.be','https://locationautocar.be','https://lvc.brussels','https://transportbelgique.com','https://rentabus.be','https://busminibus.com','https://autocar-bruxelles.be','https://busrental.brussels','https://shuttle-service.be','https://rentbus.brussels','https://vtc.brussels','https://bus4rent.be','https://chauffeur.brussels','https://autocar-service.com','https://autocar.brussels','https://locationbus.be'], keywords: ['location autocar avec chauffeur Bruxelles','autocar privé Bruxelles','location minibus avec chauffeur Bruxelles','bus rental Brussels','charter bus Brussels','coach hire Brussels','airport transfer bus Brussels','wedding bus Brussels','autocar pour événement Bruxelles','location bus mariage Bruxelles','shuttle service Brussels','transfert aéroport autocar Bruxelles'] },
+  { id: 2, name: 'CAPTIVE', type: 'seo', category: 'Paintball Bruxelles (+ other categories)', location: 'Brussels, Belgium', lang: 'FR', websites: ['https://paintballbruxelles.brussels'], keywords: ['paintball Bruxelles','paintball Brussels','laser game Bruxelles','activité paintball Bruxelles'] },
+  { id: 3, name: 'ASTRID GOLD', type: 'seo', category: 'Jewellery — diamonds, moissanite, gold, silver', location: 'Antwerp, Belgium', lang: 'FR / NL / EN', websites: ['https://www.astridgold.be'], keywords: ['diamonds Antwerp','loose diamonds','moissanite jewellery','gold jewellery Antwerp','handcraft jewellery'] },
+  { id: 4, name: 'iSearchTrends', type: 'own', category: 'E-commerce trending products platform', location: 'Online', lang: 'EN', websites: ['https://isearchtrends.com'], keywords: ['trending products','ecommerce trends','product research tool'] },
+  { id: 5, name: 'STARTUP IDEAS', type: 'startup', category: 'New startup concepts — in development', location: 'Remote', lang: 'EN / FR / AR', websites: ['https://aridhi-abdelkrim-rankwise.medium.com'], keywords: [] }
+];
+
+let currentFilter = 'all';
+let editingId = null;
+
+function save() { localStorage.setItem('seo_projects', JSON.stringify(projects)); }
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value.trim();
+  if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    render();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn, .nav-item').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = { all: 'All Projects', seo: 'SEO Clients', own: 'Own Projects', startup: 'Startup Ideas' };
+  const subs = { all: 'Overview of all SEO and personal projects', seo: 'Client websites you manage for SEO', own: 'Your own online properties', startup: 'Ideas and new ventures in development' };
+  document.getElementById('page-title').textContent = titles[f];
+  document.getElementById('page-sub').textContent = subs[f];
+  render();
+}
+
+function filtered() { return currentFilter === 'all' ? projects : projects.filter(p => p.type === currentFilter); }
+
+function updateStats() {
+  const all = projects;
+  document.getElementById('stat-total').textContent = all.length;
+  document.getElementById('stat-sites').textContent = all.reduce((a, p) => a + p.websites.length, 0);
+  document.getElementById('stat-kw').textContent = all.reduce((a, p) => a + p.keywords.length, 0) + '+';
+  document.getElementById('stat-clients').textContent = all.filter(p => p.type === 'seo').length;
+}
+
+function typeLabel(t) {
+  if (t === 'seo') return '<span class="type-badge type-seo">SEO Client</span>';
+  if (t === 'own') return '<span class="type-badge type-own">Own Project</span>';
+  return '<span class="type-badge type-startup">Startup</span>';
+}
+
+function renderCard(p) {
+  const sites = p.websites.slice(0, 4).map(s => {
+    const label = s.replace(/https?:\/\//,'').replace(/\/$/,'');
+    return `<a class="site-pill" href="${s}" target="_blank">${label}</a>`;
+  }).join('');
+  const moreS = p.websites.length > 4 ? `<span class="site-pill">+${p.websites.length - 4} more</span>` : '';
+  const kws = p.keywords.slice(0, 5).map(k => `<span class="kw-tag">${k}</span>`).join('');
+  const moreK = p.keywords.length > 5 ? `<span class="kw-tag">+${p.keywords.length - 5}</span>` : '';
+
+  return `<div class="proj-card">
+    <div class="proj-card-header">
+      <div class="proj-name">${p.name}</div>
+      ${typeLabel(p.type)}
+    </div>
+    <div class="proj-cat">${p.category}</div>
+    <div class="proj-meta">📍 ${p.location}</div>
+    <div class="proj-meta">🌐 ${p.lang}</div>
+    <div class="sites-section">
+      <div class="section-label">Websites (${p.websites.length})</div>
+      ${sites}${moreS}
+    </div>
+    ${p.keywords.length > 0 ? `<div class="kw-section">
+      <div class="section-label">Keywords (${p.keywords.length})</div>
+      ${kws}${moreK}
+    </div>` : ''}
+    <div class="card-actions">
+      <button class="card-btn card-btn-edit" onclick="openModal(${p.id})">Edit</button>
+      <button class="card-btn card-btn-del" onclick="deleteProject(${p.id})">Delete</button>
+    </div>
+  </div>`;
+}
+
+function render() {
+  updateStats();
+  const list = filtered();
+  const grid = document.getElementById('grid');
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">📂</div><div>No projects found</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(renderCard).join('');
+}
+
+function openModal(id) {
+  editingId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Edit Project' : 'New Project';
+  if (id) {
+    const p = projects.find(x => x.id === id);
+    document.getElementById('f-name').value = p.name;
+    document.getElementById('f-type').value = p.type;
+    document.getElementById('f-cat').value = p.category;
+    document.getElementById('f-loc').value = p.location;
+    document.getElementById('f-lang').value = p.lang;
+    document.getElementById('f-sites').value = p.websites.join('\n');
+    document.getElementById('f-kw').value = p.keywords.join('\n');
+  } else {
+    ['f-name','f-cat','f-loc','f-lang','f-sites','f-kw'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-type').value = 'seo';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function saveProject() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Project name is required'); return; }
+  const data = {
+    name, type: document.getElementById('f-type').value,
+    category: document.getElementById('f-cat').value.trim(),
+    location: document.getElementById('f-loc').value.trim(),
+    lang: document.getElementById('f-lang').value.trim(),
+    websites: document.getElementById('f-sites').value.split('\n').map(s => s.trim()).filter(Boolean),
+    keywords: document.getElementById('f-kw').value.split('\n').map(s => s.trim()).filter(Boolean)
+  };
+  if (editingId) {
+    const idx = projects.findIndex(p => p.id === editingId);
+    projects[idx] = { ...projects[idx], ...data };
+  } else {
+    data.id = Date.now();
+    projects.push(data);
+  }
+  save(); closeModal(); render();
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  projects = projects.filter(p => p.id !== id);
+  save(); render();
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
