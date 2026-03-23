@@ -103,6 +103,9 @@
   .gsc-step span { color: var(--accent); font-weight: 700; }
   .btn-gsc { padding: 14px 32px; background: var(--accent); color: var(--accent-dark); border: none; border-radius: var(--r); font-family: var(--font); font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
   .btn-gsc:hover { background: #1ad4ff; box-shadow: 0 4px 20px rgba(0,191,255,0.3); }
+  .gsc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gsc-status { margin-bottom: 1rem; font-size: 14px; color: var(--muted); }
+  .gsc-err { margin-bottom: 1rem; color: var(--danger); font-size: 14px; }
   .gsc-table { width: 100%; border-collapse: collapse; }
   .gsc-table th { font-size: 12px; color: var(--muted); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
   .gsc-table th.num { text-align: right; }
@@ -158,6 +161,9 @@ const params = new URLSearchParams(location.search);
 const projectId = params.get('id');
 if (!projectId) location.href = 'dashboard.html';
 let project = null, sites = [], keywords = [], gscData = [], pagespeedData = [], activeTab = 'sites';
+let gscToken = null, gscApiRows = [], gscLoading = false, gscError = '', gscBootstrapped = false;
+const GSC_REDIRECT_URI = 'https://app.crmterra.com/';
+const GSC_SITE_URL = 'https://limostar.com/';
 
 async function loadAll() {
   const [{ data: p }, { data: w }, { data: k }, { data: g }, { data: ps }] = await Promise.all([
@@ -169,6 +175,10 @@ async function loadAll() {
   ]);
   project = p; sites = w||[]; keywords = k||[]; gscData = g||[]; pagespeedData = ps||[];
   renderPage();
+  if (gscToken && !gscBootstrapped) {
+    gscBootstrapped = true;
+    await fetchGSCData(gscToken);
+  }
 }
 
 function badgeClass(t) { return 'badge badge-'+t; }
@@ -271,24 +281,37 @@ function renderPagespeed() {
 }
 
 function renderGSC() {
-  if (!gscData.length) return `<div class="gsc-connect">
+  if (!gscToken) return `<div class="gsc-connect">
     <div class="gsc-icon">📊</div>
     <div class="gsc-title">Connect Google Search Console</div>
-    <div class="gsc-sub">Pull keyword rankings, clicks, impressions and CTR for <strong>${project.name}</strong>.</div>
+    <div class="gsc-sub">Connect your Google account and pull live Search Console data for <strong>${project.name}</strong>.</div>
     <div class="gsc-steps">
       <div class="gsc-step"><span>01</span> Go to Google Cloud Console → Create OAuth 2.0 Client ID</div>
       <div class="gsc-step"><span>02</span> Enable Search Console API for your project</div>
-      <div class="gsc-step"><span>03</span> Add GSC_CLIENT_ID to config.js</div>
-      <div class="gsc-step"><span>04</span> Click Connect → Authorize access</div>
+      <div class="gsc-step"><span>03</span> Set redirect URI to https://app.crmterra.com/</div>
+      <div class="gsc-step"><span>04</span> Click Connect and approve access</div>
     </div>
     <button class="btn-gsc" onclick="connectGSC()">Connect Google Search Console →</button>
   </div>`;
+  const rows = gscApiRows;
+  const status = gscLoading ? 'Loading Search Console data...' : `Connected to ${GSC_SITE_URL}`;
+  const errorHtml = gscError ? `<div class="gsc-err">${gscError}</div>` : '';
+  if (!rows.length && !gscLoading) {
+    return `<div class="section-head"><h2>Search Console Data</h2>
+      <div class="gsc-actions"><button class="btn-sm-outline" onclick="disconnectGSC()">Disconnect</button><button class="btn-sm" onclick="syncGSC()">Sync now</button></div>
+    </div>
+    ${errorHtml}
+    <div class="gsc-status">${status}</div>
+    <div class="empty">No Search Console rows returned yet. Click Sync now.</div>`;
+  }
   return `<div class="section-head"><h2>Search Console Data</h2>
-    <div style="display:flex;gap:8px"><button class="btn-sm-outline" onclick="syncGSC()">Sync now</button><button class="btn-sm" onclick="connectGSC()">Reconnect</button></div>
+    <div class="gsc-actions"><button class="btn-sm-outline" onclick="disconnectGSC()">Disconnect</button><button class="btn-sm" onclick="syncGSC()">Sync now</button></div>
   </div>
+  ${errorHtml}
+  <div class="gsc-status">${status}</div>
   <div class="card-wrap"><table class="gsc-table">
     <thead><tr><th>Keyword</th><th>Website</th><th class="num">Position</th><th class="num">Clicks</th><th class="num">Impressions</th><th class="num">CTR</th></tr></thead>
-    <tbody>${gscData.slice(0,50).map(row=>{
+    <tbody>${rows.slice(0,50).map(row=>{
       const pos = parseFloat(row.position);
       const cls = pos<=3?'pos-top3':pos<=10?'pos-top10':'pos-other';
       return `<tr><td>${row.keyword}</td><td style="font-size:13px;color:var(--muted);font-family:monospace">${row.website_url.replace(/https?:\/\//,'').replace(/\/$/,'')}</td>
@@ -353,10 +376,85 @@ function connectGSC() {
   if (!CONFIG.GSC_CLIENT_ID || CONFIG.GSC_CLIENT_ID==='YOUR_GSC_CLIENT_ID') {
     alert('Add your GSC_CLIENT_ID to config.js first.'); return;
   }
-  window.open(`https://accounts.google.com/o/oauth2/v2/auth?client_id=${CONFIG.GSC_CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+'/gsc-callback.html')}&response_type=token&scope=https://www.googleapis.com/auth/webmasters.readonly`, '_blank', 'width=500,height=600');
+  const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
+    + `?client_id=${encodeURIComponent(CONFIG.GSC_CLIENT_ID)}`
+    + `&redirect_uri=${encodeURIComponent(GSC_REDIRECT_URI)}`
+    + '&response_type=token'
+    + `&scope=${encodeURIComponent('https://www.googleapis.com/auth/webmasters.readonly')}`
+    + '&include_granted_scopes=true'
+    + '&prompt=consent';
+  location.href = authUrl;
 }
-async function syncGSC() { alert('GSC sync: Re-connect to refresh data.'); }
+function getHashParams() {
+  return new URLSearchParams((location.hash || '').replace(/^#/, ''));
+}
+function refreshGSCTab() {
+  const tab = document.getElementById('tab-gsc');
+  if (tab) tab.innerHTML = renderGSC();
+}
+function hydrateGSCAuth() {
+  const hash = getHashParams();
+  const tokenFromHash = hash.get('access_token');
+  if (tokenFromHash) {
+    localStorage.setItem('gsc_token', tokenFromHash);
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  gscToken = localStorage.getItem('gsc_token');
+}
+async function fetchGSCData(token) {
+  gscLoading = true;
+  gscError = '';
+  refreshGSCTab();
+  try {
+    const response = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/searchAnalytics/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        startDate: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        endDate: new Date().toISOString().slice(0, 10),
+        dimensions: ['query'],
+        rowLimit: 50
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('gsc_token');
+        gscToken = null;
+      }
+      throw new Error(payload?.error?.message || 'GSC API request failed');
+    }
+    gscApiRows = (payload.rows || []).map((row) => ({
+      keyword: row.keys?.[0] || '',
+      website_url: GSC_SITE_URL,
+      position: Number((row.position || 0).toFixed(1)),
+      clicks: row.clicks || 0,
+      impressions: row.impressions || 0,
+      ctr: ((row.ctr || 0) * 100).toFixed(2)
+    }));
+  } catch (err) {
+    gscError = `Search Console sync failed: ${err.message}`;
+  } finally {
+    gscLoading = false;
+    refreshGSCTab();
+  }
+}
+async function syncGSC() {
+  if (!gscToken) return;
+  await fetchGSCData(gscToken);
+}
+function disconnectGSC() {
+  localStorage.removeItem('gsc_token');
+  gscToken = null;
+  gscApiRows = [];
+  gscError = '';
+  refreshGSCTab();
+}
 function logout() { sessionStorage.removeItem('seopm_auth'); location.href='index.html'; }
+hydrateGSCAuth();
 loadAll();
 </script>
 </body>
