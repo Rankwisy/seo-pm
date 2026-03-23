@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SEO-PM · Dashboard</title>
+<link rel="apple-touch-icon" sizes="180x180" href="https://ik.imagekit.io/by733ltn6/FAVICONS/favicon_io%20(7)/apple-touch-icon.png?updatedAt=1759519556369">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ik.imagekit.io/by733ltn6/FAVICONS/favicon_io%20(7)/favicon-32x32.png?updatedAt=1759519556373">
+<link rel="icon" type="image/png" sizes="16x16" href="https://ik.imagekit.io/by733ltn6/FAVICONS/favicon_io%20(7)/favicon-16x16.png?updatedAt=1759519556415">
+<link rel="icon" type="image/png" sizes="192x192" href="https://ik.imagekit.io/by733ltn6/FAVICONS/favicon_io%20(7)/android-chrome-192x192.png?updatedAt=1759519556384">
+<link rel="icon" type="image/png" sizes="512x512" href="https://ik.imagekit.io/by733ltn6/FAVICONS/favicon_io%20(7)/android-chrome-512x512.png?updatedAt=1759519556430">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
@@ -38,6 +43,8 @@
   .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
   .nav-right { display: flex; align-items: center; gap: 16px; }
   .nav-user { font-size: 14px; color: var(--muted); }
+  .nav-app { font-size: 13px; color: var(--muted); text-decoration: none; border: 1px solid var(--border2); border-radius: var(--r); padding: 7px 12px; transition: all 0.2s; font-weight: 500; }
+  .nav-app:hover { color: var(--accent); border-color: var(--accent); }
   .nav-logout { font-size: 14px; color: var(--muted); background: none; border: 1px solid var(--border2); border-radius: var(--r); padding: 7px 16px; cursor: pointer; font-family: var(--font); transition: all 0.2s; font-weight: 500; }
   .nav-logout:hover { color: var(--accent); border-color: var(--accent); }
 
@@ -132,6 +139,9 @@
   <div class="nav-logo"><span class="nav-dot"></span>SEO-PM</div>
   <div class="nav-right">
     <span class="nav-user">Alicante, ES</span>
+    <a class="nav-app" href="https://crmterra.com/" target="_blank">CRM Terra</a>
+    <a class="nav-app" href="https://isearchtrends.com/" target="_blank">iSearchTrends</a>
+    <a class="nav-app" href="https://rankwise.eu/" target="_blank">Rankwise</a>
     <button class="nav-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
