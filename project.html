@@ -162,17 +162,21 @@ const projectId = params.get('id');
 if (!projectId) location.href = 'dashboard.html';
 let project = null, sites = [], keywords = [], gscData = [], pagespeedData = [], activeTab = 'sites';
 let gscToken = null, gscApiRows = [], gscLoading = false, gscError = '', gscBootstrapped = false;
-const GSC_REDIRECT_URI = 'https://app.crmterra.com/';
+const GSC_REDIRECT_URI = 'https://app.crmterra.com/project.html';
 const GSC_SITE_URL = 'https://limostar.com/';
 
 async function loadAll() {
-  const [{ data: p }, { data: w }, { data: k }, { data: g }, { data: ps }] = await Promise.all([
+  const [{ data: p, error: projectError }, { data: w }, { data: k }, { data: g }, { data: ps }] = await Promise.all([
     db.from('projects').select('*').eq('id', projectId).single(),
     db.from('websites').select('*').eq('project_id', projectId).order('is_main', { ascending: false }),
     db.from('keywords').select('*').eq('project_id', projectId).order('lang'),
     db.from('gsc_data').select('*').eq('project_id', projectId).order('date', { ascending: false }),
     db.from('pagespeed_data').select('*').order('checked_at', { ascending: false })
   ]);
+  if (projectError || !p) {
+    renderInvalidProject();
+    return;
+  }
   project = p; sites = w||[]; keywords = k||[]; gscData = g||[]; pagespeedData = ps||[];
   renderPage();
   if (gscToken && !gscBootstrapped) {
@@ -206,6 +210,16 @@ function renderPage() {
     <div id="tab-keywords" class="tab-content">${renderKeywords()}</div>
     <div id="tab-pagespeed" class="tab-content">${renderPagespeed()}</div>
     <div id="tab-gsc" class="tab-content">${renderGSC()}</div>
+  `;
+}
+
+function renderInvalidProject() {
+  document.title = 'SEO-PM · Project not found';
+  document.getElementById('main-content').innerHTML = `
+    <div class="empty">
+      Project not found. The URL may be invalid or the project was removed.
+      <div style="margin-top:1rem;"><a class="nav-back" href="dashboard.html">← Back to dashboard</a></div>
+    </div>
   `;
 }
 
@@ -381,6 +395,7 @@ function connectGSC() {
     + `&redirect_uri=${encodeURIComponent(GSC_REDIRECT_URI)}`
     + '&response_type=token'
     + `&scope=${encodeURIComponent('https://www.googleapis.com/auth/webmasters.readonly')}`
+    + `&state=${encodeURIComponent(projectId || '')}`
     + '&include_granted_scopes=true'
     + '&prompt=consent';
   location.href = authUrl;
@@ -395,9 +410,12 @@ function refreshGSCTab() {
 function hydrateGSCAuth() {
   const hash = getHashParams();
   const tokenFromHash = hash.get('access_token');
+  const stateProjectId = hash.get('state');
   if (tokenFromHash) {
     localStorage.setItem('gsc_token', tokenFromHash);
-    history.replaceState(null, '', location.pathname + location.search);
+    const targetId = stateProjectId || projectId || '';
+    const nextUrl = targetId ? `${location.pathname}?id=${encodeURIComponent(targetId)}` : location.pathname;
+    history.replaceState(null, '', nextUrl);
   }
   gscToken = localStorage.getItem('gsc_token');
 }
