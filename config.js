@@ -18,7 +18,8 @@ const CONFIG = {
 
   // Google Search Console OAuth Client ID
   // Get at: https://console.cloud.google.com/
-  GSC_CLIENT_ID: 'YOUR_GSC_CLIENT_ID',
+  GSC_CLIENT_ID: (typeof window !== 'undefined' && window.GSC_CLIENT_ID) ? window.GSC_CLIENT_ID : 'YOUR_GSC_CLIENT_ID',
+  GSC_REDIRECT_URI: (typeof window !== 'undefined' && window.GSC_REDIRECT_URI) ? window.GSC_REDIRECT_URI : 'https://app.crmterra.com/project.html',
 
   // App info
   APP_NAME: 'SEO-PM',

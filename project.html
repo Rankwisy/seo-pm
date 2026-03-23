@@ -162,7 +162,7 @@ const projectId = params.get('id');
 if (!projectId) location.href = 'dashboard.html';
 let project = null, sites = [], keywords = [], gscData = [], pagespeedData = [], activeTab = 'sites';
 let gscToken = null, gscApiRows = [], gscLoading = false, gscError = '', gscBootstrapped = false;
-const GSC_REDIRECT_URI = 'https://app.crmterra.com/project.html';
+const GSC_REDIRECT_URI = CONFIG.GSC_REDIRECT_URI || 'https://app.crmterra.com/project.html';
 const GSC_SITE_URL = 'https://limostar.com/';
 
 async function loadAll() {
@@ -302,7 +302,7 @@ function renderGSC() {
     <div class="gsc-steps">
       <div class="gsc-step"><span>01</span> Go to Google Cloud Console → Create OAuth 2.0 Client ID</div>
       <div class="gsc-step"><span>02</span> Enable Search Console API for your project</div>
-      <div class="gsc-step"><span>03</span> Set redirect URI to https://app.crmterra.com/</div>
+      <div class="gsc-step"><span>03</span> Set redirect URI to https://app.crmterra.com/project.html</div>
       <div class="gsc-step"><span>04</span> Click Connect and approve access</div>
     </div>
     <button class="btn-gsc" onclick="connectGSC()">Connect Google Search Console →</button>
@@ -387,11 +387,9 @@ async function runPagespeed(siteId, url) {
 }
 async function runAllPagespeed() { for (const s of sites) await runPagespeed(s.id, s.url); }
 function connectGSC() {
-  if (!CONFIG.GSC_CLIENT_ID || CONFIG.GSC_CLIENT_ID==='YOUR_GSC_CLIENT_ID') {
-    alert('Add your GSC_CLIENT_ID to config.js first.'); return;
-  }
+  const runtimeClientId = (window.GSC_CLIENT_ID || CONFIG.GSC_CLIENT_ID || '').trim();
   const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
-    + `?client_id=${encodeURIComponent(CONFIG.GSC_CLIENT_ID)}`
+    + `?client_id=${encodeURIComponent(runtimeClientId)}`
     + `&redirect_uri=${encodeURIComponent(GSC_REDIRECT_URI)}`
     + '&response_type=token'
     + `&scope=${encodeURIComponent('https://www.googleapis.com/auth/webmasters.readonly')}`
